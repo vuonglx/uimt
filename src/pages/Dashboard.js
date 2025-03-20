@@ -1,10 +1,11 @@
 import React from 'react';
-import TopBar from '../components/TopBar';
+import Header from '../components/Header';
+import SideNav from '../components/SideNav';
 import DashboardCard from '../components/DashboardCard';
 import ActivityLog from '../components/ActivityLog';
 
 const Dashboard = () => {
-  const username = 'Admin'; // Thay bằng dữ liệu thực tế từ state hoặc API
+  const username = localStorage.getItem('username') || 'Admin';
   const stats = [
     { title: 'Tổ chức', count: 5, icon: '🏢' },
     { title: 'Công ty', count: 12, icon: '🏭' },
@@ -12,10 +13,10 @@ const Dashboard = () => {
   ];
 
   return (
-    <div className="dashboard">
-      <TopBar />
-      <div className="dashboard-content">
-        <aside className="side-nav">Side Nav</aside>
+    <div className="layout">
+      <Header />
+      <div className="main-content">
+        <SideNav />
         <main>
           <h1>Chào mừng, {username}!</h1>
           <div className="stats">

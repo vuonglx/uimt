@@ -1,32 +1,49 @@
-import React from 'react';
-import TopBar from '../components/TopBar';
+import React, { useState, useEffect } from 'react';
+import Header from '../components/Header';
+import SideNav from '../components/SideNav';
 import Table from '../components/Table';
 
 const OrganizationList = () => {
-  // Dữ liệu mẫu (có thể thay bằng dữ liệu từ API)
-  const data = [
-    { name: 'Org A', code: 'A001', address: 'Hà Nội', phone: '0123456789', email: 'a@example.com', active: 'Yes' },
-    { name: 'Org B', code: 'B002', address: 'TP.HCM', phone: '0987654321', email: 'b@example.com', active: 'No' },
-    { name: 'Org C', code: 'C003', address: 'Đà Nẵng', phone: '0912345678', email: 'c@example.com', active: 'Yes' },
+  const [data, setData] = useState([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const mockData = [
+        { id: 1, name: 'Tổ chức A', code: 'ORG001', address: '123 Đường ABC, Quận 1, TP.HCM', status: 'Hoạt động' },
+        { id: 2, name: 'Tổ chức B', code: 'ORG002', address: '456 Đường XYZ, Quận 2, TP.HCM', status: 'Không hoạt động' },
+      ];
+      setData(mockData);
+    };
+    fetchData();
+  }, []);
+
+  const columns = [
+    { key: 'id', label: 'ID', sortable: true },
+    { key: 'name', label: 'Tên tổ chức', sortable: true, filterable: true },
+    { key: 'code', label: 'Mã', sortable: true, filterable: true },
+    { key: 'address', label: 'Địa chỉ', filterable: true },
+    { key: 'status', label: 'Trạng thái', sortable: true },
+    { key: 'actions', label: 'Thao tác' },
   ];
 
-  // Cấu hình cột
-  const columns = [
-    { key: 'name', label: 'Name' },
-    { key: 'code', label: 'Code' },
-    { key: 'address', label: 'Address' },
-    { key: 'phone', label: 'Phone' },
-    { key: 'email', label: 'Email' },
-    { key: 'active', label: 'Active' },
-  ];
+  const handleEdit = (row) => {
+    console.log('Edit:', row);
+  };
+
+  const handleDelete = (row) => {
+    setData(data.filter((item) => item.id !== row.id));
+  };
 
   return (
-    <div className="page">
-      <TopBar />
-      <main>
-        <h1>Danh sách Tổ chức</h1>
-        <Table columns={columns} data={data} />
-      </main>
+    <div className="layout">
+      <Header />
+      <div className="main-content">
+        <SideNav />
+        <main>
+          <h1>Quản lý Tổ chức</h1>
+          <Table columns={columns} data={data} onEdit={handleEdit} onDelete={handleDelete} />
+        </main>
+      </div>
     </div>
   );
 };

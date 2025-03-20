@@ -5,20 +5,22 @@ const LoginForm = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
-  const navigate = useNavigate(); // Hook để điều hướng
+  const navigate = useNavigate();
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log({ username, password, rememberMe });
-    // Giả lập logic đăng nhập thành công (bạn có thể thay bằng gọi API thực tế)
     if (username && password) {
-      navigate('/dashboard'); // Chuyển hướng sang trang Dashboard
+      localStorage.setItem('username', username); // Lưu username vào localStorage
+      console.log('Đăng nhập thành công:', { username, password, rememberMe });
+      navigate('/dashboard'); // Chuyển hướng đến Dashboard
+    } else {
+      console.error('Vui lòng nhập đầy đủ tên đăng nhập và mật khẩu');
     }
   };
 
   return (
     <div className="login-form-container">
-      <img src="/logo.png" alt="Logo" className="logo" /> {/* Thay bằng đường dẫn logo */}
+      <img src="/logo.png" alt="Logo" className="logo" />
       <form onSubmit={handleSubmit} className="login-form">
         <div className="form-group">
           <input

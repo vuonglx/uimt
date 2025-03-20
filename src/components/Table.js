@@ -1,16 +1,15 @@
 import React, { useState, useMemo } from 'react';
+import Button from './Button';
 
-const Table = ({ columns, data }) => {
-  const [searchTerm, setSearchTerm] = useState(''); // Tìm kiếm
-  const [filter, setFilter] = useState({}); // Lọc theo cột
-  const [currentPage, setCurrentPage] = useState(1); // Trang hiện tại
-  const itemsPerPage = 5; // Số mục mỗi trang
+const Table = ({ columns, data, onEdit, onDelete }) => {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filter, setFilter] = useState({});
+  const [currentPage, setCurrentPage] = useState(1);
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
+  const itemsPerPage = 5;
 
-  // Hàm lọc và tìm kiếm dữ liệu
   const filteredData = useMemo(() => {
     let result = [...data];
-
-    // Tìm kiếm toàn cục
     if (searchTerm) {
       result = result.filter((item) =>
         Object.values(item).some((val) =>
@@ -18,8 +17,6 @@ const Table = ({ columns, data }) => {
         )
       );
     }
-
-    // Lọc theo cột
     Object.keys(filter).forEach((key) => {
       if (filter[key]) {
         result = result.filter((item) =>
@@ -27,57 +24,67 @@ const Table = ({ columns, data }) => {
         );
       }
     });
-
+    if (sortConfig.key) {
+      result.sort((a, b) => {
+        if (a[sortConfig.key] < b[sortConfig.key]) return sortConfig.direction === 'asc' ? -1 : 1;
+        if (a[sortConfig.key] > b[sortConfig.key]) return sortConfig.direction === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
     return result;
-  }, [data, searchTerm, filter]);
+  }, [data, searchTerm, filter, sortConfig]);
 
-  // Tính toán phân trang
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
   const paginatedData = filteredData.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
 
-  // Xử lý thay đổi bộ lọc
   const handleFilterChange = (column, value) => {
     setFilter((prev) => ({ ...prev, [column]: value }));
-    setCurrentPage(1); // Reset về trang đầu khi lọc
+    setCurrentPage(1);
   };
 
-  // Xử lý thay đổi trang
+  const handleSort = (key) => {
+    setSortConfig((prev) => ({
+      key,
+      direction: prev.key === key && prev.direction === 'asc' ? 'desc' : 'asc',
+    }));
+  };
+
   const handlePageChange = (page) => {
     setCurrentPage(page);
   };
 
   return (
     <div className="table-container">
-      {/* Ô tìm kiếm */}
-      <div className="table-search">
+      <div className="table-header">
         <input
           type="text"
-          placeholder="Tìm kiếm..."
+          placeholder="Tìm kiếm tổ chức..."
           value={searchTerm}
           onChange={(e) => {
             setSearchTerm(e.target.value);
-            setCurrentPage(1); // Reset trang khi tìm kiếm
+            setCurrentPage(1);
           }}
         />
+        <Button type="primary">Thêm tổ chức</Button>
       </div>
-
-      {/* Bảng */}
       <table className="data-table">
         <thead>
           <tr>
             {columns.map((col) => (
-              <th key={col.key}>
+              <th key={col.key} onClick={() => col.sortable && handleSort(col.key)}>
                 {col.label}
-                {/* Bộ lọc cho từng cột */}
-                <input
-                  type="text"
-                  placeholder={`Lọc ${col.label}`}
-                  onChange={(e) => handleFilterChange(col.key, e.target.value)}
-                  className="filter-input"
-                />
+                {sortConfig.key === col.key && (sortConfig.direction === 'asc' ? ' ↑' : ' ↓')}
+                {col.filterable && (
+                  <input
+                    type="text"
+                    placeholder={`Lọc ${col.label}`}
+                    onChange={(e) => handleFilterChange(col.key, e.target.value)}
+                    className="filter-input"
+                  />
+                )}
               </th>
             ))}
           </tr>
@@ -87,7 +94,16 @@ const Table = ({ columns, data }) => {
             paginatedData.map((row, index) => (
               <tr key={index}>
                 {columns.map((col) => (
-                  <td key={col.key}>{row[col.key]}</td>
+                  <td key={col.key}>
+                    {col.key === 'actions' ? (
+                      <div className="actions">
+                        <span className="action-icon edit" onClick={() => onEdit(row)}>✏️</span>
+                        <span className="action-icon delete" onClick={() => onDelete(row)}>🗑️</span>
+                      </div>
+                    ) : (
+                      row[col.key]
+                    )}
+                  </td>
                 ))}
               </tr>
             ))
@@ -98,24 +114,30 @@ const Table = ({ columns, data }) => {
           )}
         </tbody>
       </table>
-
-      {/* Phân trang */}
       <div className="pagination">
-        <button
+        <Button
+          type="secondary"
           onClick={() => handlePageChange(currentPage - 1)}
           disabled={currentPage === 1}
         >
           Trước
-        </button>
-        <span>
-          Trang {currentPage} / {totalPages}
-        </span>
-        <button
+        </Button>
+        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+          <Button
+            key={page}
+            type={currentPage === page ? 'primary' : 'secondary'}
+            onClick={() => handlePageChange(page)}
+          >
+            {page}
+          </Button>
+        ))}
+        <Button
+          type="secondary"
           onClick={() => handlePageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
         >
           Sau
-        </button>
+        </Button>
       </div>
     </div>
   );
